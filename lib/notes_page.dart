@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:learn/utils/notes_tile.dart';
+import 'package:learn/utils/pop_up.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class NotesPage extends StatefulWidget {
@@ -15,38 +17,8 @@ class _NotesPageState extends State<NotesPage> {
   void addNote() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        actions: [
-          TextField(
-            controller: textController,
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              MaterialButton(
-                onPressed: () {
-                  saveNote();
-                  Navigator.pop(context);
-                },
-                color: Colors.black,
-                textColor: Colors.white,
-                child: const Text("Save"),
-              ),
-              const SizedBox(
-                width: 10,
-              ),
-              MaterialButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                color: Colors.black,
-                textColor: Colors.white,
-                child: const Text("Cancel"),
-              )
-            ],
-          )
-        ],
-      ),
+      builder: (context) =>
+          PopUp(textController: textController, saveNote: saveNote),
     );
   }
 
@@ -68,9 +40,28 @@ class _NotesPageState extends State<NotesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+        title: const Center(
+          child: Text(
+            'Nottie',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 26,
+            ),
+          ),
+        ),
+      ),
       floatingActionButton: FloatingActionButton(
+        shape: const CircleBorder(),
+        backgroundColor: Colors.green[600],
         onPressed: addNote,
-        child: const Icon(Icons.add),
+        child: const Icon(
+          Icons.add,
+          color: Colors.white,
+        ),
       ),
       body: StreamBuilder<List<Map<String, dynamic>>>(
         stream: _notesStream,
@@ -86,18 +77,19 @@ class _NotesPageState extends State<NotesPage> {
           return ListView.builder(
             itemCount: notes.length,
             itemBuilder: (context, index) {
-              //get individual note
               final note = notes[index];
-              final noteId = note['id'] as int; // Ensure noteId is an integer
+              final noteId = note['id'] as int;
               final noteText = note['body'];
-              return ListTile(
-                title: Text(noteText),
-                trailing: IconButton(
-                  onPressed: () {
-                    deleteNote(noteId);
-                  },
-                  icon: const Icon(Icons.delete),
-                ),
+              return Column(
+                children: [
+                  NotesTile(
+                      deleteNote: deleteNote,
+                      noteText: noteText,
+                      noteId: noteId),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                ],
               );
             },
           );
